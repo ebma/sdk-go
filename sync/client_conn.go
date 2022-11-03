@@ -91,7 +91,7 @@ func (c *DefaultClient) readSocket() (*sync.Response, error) {
 	// the test will inevitably fail. Note(hacdias): consider changing
 	// the timeout to a larger value in case slower tests fail. The same
 	// value must be changed on the sync service side too.
-	ctx, cancel := context.WithTimeout(c.ctx, time.Hour)
+	ctx, cancel := context.WithTimeout(c.ctx, 3 * time.Hour)
 	defer cancel()
 
 	var req *sync.Response
