@@ -29,19 +29,19 @@ func (c *DefaultClient) responsesWorker() {
 				break
 			}
 
-			c.log.Fatalw("error while reading socket", "error", err)
+			c.log.Warnw("error while reading socket", "error", err)
 		}
 
 		var ch chan *sync.Response
 		c.handlersMu.Lock()
 		ch = c.handlers[res.ID]
-		
+
 		if ch == nil {
 			c.log.Warnf("no handler available for response: %s", res.ID)
 		} else {
 			ch <- res
 		}
-		
+
 		c.handlersMu.Unlock()
 	}
 
@@ -92,7 +92,8 @@ func (c *DefaultClient) readSocket() (*sync.Response, error) {
 	// the test will inevitably fail. Note(hacdias): consider changing
 	// the timeout to a larger value in case slower tests fail. The same
 	// value must be changed on the sync service side too.
-	ctx, cancel := context.WithTimeout(c.ctx, 3 * time.Hour)
+	ctx, cancel := context.WithTimeout(c.ctx, 3*time.Hour)
+	c.log.Warnf("Log message from modified sdk-go")
 	defer cancel()
 
 	var req *sync.Response
