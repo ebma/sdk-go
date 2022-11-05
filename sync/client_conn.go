@@ -93,7 +93,6 @@ func (c *DefaultClient) readSocket() (*sync.Response, error) {
 	// the timeout to a larger value in case slower tests fail. The same
 	// value must be changed on the sync service side too.
 	ctx, cancel := context.WithTimeout(c.ctx, 3*time.Hour)
-	c.log.Warnf("Log message from modified sdk-go")
 	defer cancel()
 
 	var req *sync.Response

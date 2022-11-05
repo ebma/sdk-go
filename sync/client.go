@@ -93,6 +93,7 @@ func MustGenericClient(ctx context.Context, log *zap.SugaredLogger) *DefaultClie
 
 // newClient creates a new sync client.
 func newClient(ctx context.Context, log *zap.SugaredLogger, extractor func(ctx context.Context) *runtime.RunParams) (*DefaultClient, error) {
+	log.Warnf("Log message from modified sdk-go")
 	ctx, cancel := context.WithCancel(ctx)
 	c := &DefaultClient{
 		ctx:       ctx,
