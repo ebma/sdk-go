@@ -91,6 +91,21 @@ func MustGenericClient(ctx context.Context, log *zap.SugaredLogger) *DefaultClie
 	return c
 }
 
+func recoverer(maxPanics int, log *zap.SugaredLogger, f func()) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Warnw("encountered error in recoverer", "error", err)
+			if maxPanics == 0 {
+				panic("TOO MANY PANICS")
+			} else {
+				log.Info("recovering from panic")
+				go recoverer(maxPanics-1, log, f)
+			}
+		}
+	}()
+	f()
+}
+
 // newClient creates a new sync client.
 func newClient(ctx context.Context, log *zap.SugaredLogger, extractor func(ctx context.Context) *runtime.RunParams) (*DefaultClient, error) {
 	log.Warnf("Log message from modified sdk-go")
@@ -105,18 +120,20 @@ func newClient(ctx context.Context, log *zap.SugaredLogger, extractor func(ctx c
 
 	c.sugarOperations = &sugarOperations{c}
 
-	addr, err := socketAddress()
-	if err != nil {
-		return nil, err
-	}
+	go recoverer(4, log, func() {
+		addr, err := socketAddress()
+		if err != nil {
+			c.log.Warnw("error while creating socket ADDRESS", "error", err)
+		}
 
-	c.socket, _, err = websocket.Dial(ctx, addr, nil)
-	if err != nil {
-		return nil, err
-	}
+		c.socket, _, err = websocket.Dial(ctx, addr, nil)
+		if err != nil {
+			c.log.Warnw("error while dialing socket", "error", err)
+		}
 
-	c.wg.Add(1)
-	go c.responsesWorker()
+		c.wg.Add(0)
+		c.responsesWorker()
+	})
 
 	return c, nil
 }
